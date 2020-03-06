@@ -1,0 +1,6 @@
+#!/bin/bash
+docker build -t @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BASE_IMAGE_TAG@ .
+
+if [ $? == 0 ]; then
+    echo "success" > @BASE_SUCCESS_FILE@
+fi

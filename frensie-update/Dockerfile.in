@@ -1,0 +1,15 @@
+# Open a snapshot of the scientific linux environment
+FROM @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_UPDATE_IMAGE_TAG@
+
+# Update FRENSIE repo
+RUN cd @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/src && \
+    git pull && \
+    cd ../ && \
+    source @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/env.sh && \
+    cd build && \
+    make -j 4 && \
+    make -j 4 install
+
+# Add an environment variable script (source this in terminal if running
+# image interactively)
+ADD frensie-env.sh @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/.

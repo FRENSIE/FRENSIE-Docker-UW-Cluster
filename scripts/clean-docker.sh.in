@@ -1,0 +1,69 @@
+#!/bin/bash
+
+update_only="false"
+
+while getopts u option
+do case "${option}"
+   in
+       u) update_only="true"
+   esac
+done
+
+# Check if the frensie-update docker image exists
+docker images @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_UPDATE_IMAGE_TAG@ -q > frensie_update_check
+
+frensie_update_id=`cat frensie_update_check`
+echo "${frensie_update_id}"
+
+if [ "${frensie_update_id}" ]; then
+   docker rmi -f @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_UPDATE_IMAGE_TAG@
+fi
+
+if [ -f @CMAKE_BINARY_DIR@/frensie-update/@FRENSIE_UPDATE_SUCCESS_FILE@ ]; then
+   rm @CMAKE_BINARY_DIR@/frensie-update/@FRENSIE_UPDATE_SUCCESS_FILE@
+fi
+
+if [ "${update_only}" == "false" ]; then
+
+    # Check if the frensie-checkout docker image exists
+    docker images @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_CHECKOUT_IMAGE_TAG@ -q > frensie_checkout_check
+    
+    frensie_checkout_id=`cat frensie_checkout_check`
+    echo "${frensie_checkout_id}"
+
+    if [ "${frensie_checkout_id}" ]; then
+        docker rmi -f @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_CHECKOUT_IMAGE_TAG@
+    fi
+
+    if [ -f @CMAKE_BINARY_DIR@/frensie-checkout/@FRENSIE_CHECKOUT_SUCCESS_FILE@ ]; then
+       rm @CMAKE_BINARY_DIR@/frensie-checkout/@FRENSIE_CHECKOUT_SUCCESS_FILE@
+    fi
+    
+    # Check if the deps docker image exists
+    docker images @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BUILD_DEPS_IMAGE_TAG@ -q > deps_check
+    
+    deps_id=`cat deps_check`
+    echo "${deps_id}"
+    
+    if [ "${deps_id}" ]; then
+        docker rmi -f @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BUILD_DEPS_IMAGE_TAG@
+    fi
+
+    if [ -f @CMAKE_BINARY_DIR@/build-deps/@BUILD_DEPS_SUCCESS_FILE@ ]; then
+       rm @CMAKE_BINARY_DIR@/build-deps/@BUILD_DEPS_SUCCESS_FILE@
+    fi
+    
+    # Check if the base docker image exist
+    docker images @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BASE_IMAGE_TAG@ -q > base_check
+    
+    base_id=`cat base_check`
+    echo "${base_id}"
+    
+    if [ "${base_id}" ]; then
+        docker rmi -f @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BASE_IMAGE_TAG@
+    fi
+
+    if [ -f @CMAKE_BINARY_DIR@/base/@BASE_SUCCESS_FILE@ ]; then
+       rm @CMAKE_BINARY_DIR@/base/@BASE_SUCCESS_FILE@
+    fi
+fi

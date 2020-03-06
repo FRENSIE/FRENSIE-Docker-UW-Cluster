@@ -1,0 +1,150 @@
+# Open a snapshot of the uw-hpc-clone base environment
+FROM @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BASE_IMAGE_TAG@
+
+# Prepare gcc build
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc && \
+    ln -s @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/archive/gcc-5.5.0.tar.gz && \
+    tar   -xvf gcc-5.5.0.tar.gz && \
+    cd         gcc-5.5.0 && \
+    ./contrib/download_prerequisites && \
+    cd    ../ && \
+    mkdir build && \
+    ln -s      gcc-5.5.0 src
+
+# Configure gcc
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/build && \
+    ../src/configure --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/ --enable-multilib --with-system-zlib --enable-languages=c,c++,fortran
+
+# Build gcc
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/build && \
+    make  -j 4
+
+# Install gcc
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/build && \
+    make  -j 4 install
+
+# Prepare cmake build
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/cmake && \
+    ln -s ../archive/cmake-3.11.0-Linux-x86_64.tar.gz && \
+    tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz
+
+# Prepare to make doxygen
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/doxygen && \
+    ln -s ../archive/doxygen-1.8.14.src.tar.gz && \
+    tar -xvf doxygen-1.8.14.src.tar.gz && \
+    mkdir build && \
+    ln -s doxygen-1.8.14 src && \
+    cd build && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/cmake/cmake-3.11.0-Linux-x86_64/bin:$PATH && \
+    cmake ../src cmake ../src -DCMAKE_INSTALL_PREFIX=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/doxygen && \ 
+    make -j 4 && \
+    make install
+
+# Build zlib
+# RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/zlib && \
+#    ln -s ../archive/zlib-1.2.11.tar.gz && \
+#    tar -xvf zlib-1.2.11.tar.gz && \
+#    mkdir build && \
+#    ln -s zlib-1.2.11 src && \
+#    cd build && \
+#    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:$PATH && \
+#    ../src/configure --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/zlib && \
+#    make -j 4 && \
+#    make install
+
+# Build mpi
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi && \
+    ln -s ../archive/openmpi-1.8.8.tar.gz && \
+    tar -xvf openmpi-1.8.8.tar.gz && \
+    mkdir build && \
+    ln -s openmpi-1.8.8 src && \
+    cd build && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:$LD_LIBRARY_PATH && \
+    ../src/configure --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi/ && \
+    make -j 4 && \
+    make install
+
+# Build hdf5
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5 && \
+    ln -s ../archive/hdf5-1.10.1.tar.gz && \
+    tar -xvf hdf5-1.10.1.tar.gz && \
+    mkdir build && \
+    ln -s hdf5-1.10.1 src && \
+    cd build && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:$PATH && \
+    ../src/configure --enable-optimized --enable-shared --enable-cxx --enable-hl --enable-build-mode=production CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0 --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/ && \
+    make -j 4 && \
+    make install
+
+# Build python
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python && \
+    ln -s ../archive/Python-2.7.14.tgz && \
+    tar -xvf Python-2.7.14.tgz && \
+    cd Python-2.7.14 && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:$PATH && \
+    ./configure --enable-shared --enable-optimizations --with-threads --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/ && \
+    make -j 4 && \
+    make install && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:$LD_LIBRARY_PATH && \
+    python2.7 setup.py build && \
+    python2.7 setup.py install && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python2.7 get-pip.py && \
+    pip2.7 install numpy
+
+# Build swig
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/swig && \
+    ln -s swig src && \
+    cd src && \
+    ./autogen.sh && \
+    cd ../ && \
+    mkdir build && \
+    cd build && \
+    wget https://ftp.pcre.org/pub/pcre/pcre-8.42.tar.gz && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:$LD_LIBRARY_PATH && \
+    ../src/Tools/pcre-build.sh && \
+    ../src/configure --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/swig && \
+    make -j 4 && \
+    make install
+
+# Build boost
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/boost && \
+    ln -s ../archive/boost_1_66_0.tar.gz && \
+    tar -xvf boost_1_66_0.tar.gz && \
+    cd boost_1_66_0 && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:$LD_LIBRARY_PATH && \
+    ./bootstrap.sh --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/boost/ && \
+    sed -i "$ a using mpi ;" project-config.jam && \
+    ./b2 -j4 --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/boost/ -s NO_BZIP2=1 link=shared runtime-link=shared cxxflags="-D_GLIBCXX_USE_CXX11_ABI=0" install
+
+# Build moab
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/moab && \
+    autoreconf -fi && \
+    cd ../ && \
+    ln -s moab src && \
+    mkdir build && \
+    cd build && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:$LD_LIBRARY_PATH && \
+    ../src/configure --enable-optimize --enable-shared --disable-debug --enable-64bit CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0 --with-hdf5=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/ --prefix=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/ && \
+    make -j 4 && \
+    make install
+
+# Build dagmc
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/dagmc && \
+    ln -s DAGMC src && \
+    mkdir build && \
+    cd build && \
+    export HDF5_ROOT=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5 && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/cmake/cmake-3.11.0-Linux-x86_64/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/hdf5/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:$LD_LIBRARY_PATH && \
+    cmake ../src -DCMAKE_INSTALL_PREFIX=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/dagmc -DCMAKE_BUILD_TYPE:STRING=Release -DMOAB_DIR=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/ -DMOAB_LIBRARY_DIRS=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab/moab-5/lib -DCMAKE_CXX_FLAGS:STRING="-D_GLIBCXX_USE_CXX11_ABI=0" -DCMAKE_CXX_COMPILER=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin/g++  -DCMAKE_C_COMPILER=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin/gcc && \
+    make -j 4 && \
+    make install
+
+    
+    

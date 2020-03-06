@@ -1,0 +1,6 @@
+#!/bin/bash
+docker build -t @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@FRENSIE_CHECKOUT_IMAGE_TAG@ .
+
+if [ $? == 0 ]; then
+    echo "success" > @FRENSIE_CHECKOUT_SUCCESS_FILE@
+fi

@@ -1,0 +1,22 @@
+# Open a snapshot of the scientific linux environment
+FROM @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BUILD_DEPS_IMAGE_TAG@
+
+# Create the build directories
+RUN mkdir -p "@UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/build"
+
+# Copy the frensie.sh configure file
+ADD frensie.sh @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/build/.
+
+# Check out FRENSIE
+RUN cd @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@ && \
+    git clone https://github.com/FRENSIE/FRENSIE.git -b @FRENSIE_BRANCH@ && \
+    ln -s FRENSIE src && \
+    cd build && \
+    export PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/swig/bin:/home/lkersting/hdf5/bin:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/cmake/cmake-3.11.0-Linux-x86_64/bin:$PATH && \
+    export LD_LIBRARY_PATH=@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/mpi/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/python/lib:@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/gcc/lib64:$LD_LIBRARY_PATH && \
+    ./frensie.sh && \
+    make -j 4
+
+# Add an environment variable script (source this in terminal if running
+# image interactively)
+ADD env.sh @UW_CLUSTER_USER_DIR@/@FRENSIE_CHECKOUT_DIR@/.

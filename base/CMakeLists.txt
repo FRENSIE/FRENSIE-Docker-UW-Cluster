@@ -1,0 +1,18 @@
+# Configure the Dockerfile
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Dockerfile.in ${CMAKE_CURRENT_BINARY_DIR}/Dockerfile @ONLY)
+
+# Configure the build script
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build-base.sh.in ${CMAKE_CURRENT_BINARY_DIR}/build-base.sh @ONLY)
+
+# Configure the run script
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/run-base.sh.in ${CMAKE_CURRENT_BINARY_DIR}/run-base.sh @ONLY)
+
+# Create the docker image
+ADD_CUSTOM_COMMAND(OUTPUT ${BASE_SUCCESS_FILE}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ./build-base.sh)
+
+ADD_CUSTOM_TARGET(${BASE_TARGET} ALL
+  DEPENDS ${BASE_SUCCESS_FILE})
+
+

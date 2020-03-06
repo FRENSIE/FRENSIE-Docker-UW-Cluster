@@ -1,0 +1,47 @@
+# Open a snapshot of the scientific linux environment
+FROM sl:6
+
+# Install dependencies
+RUN yum install -y wget autoconf gcc gcc-c++ gcc-gfortran libgcc libgcc.i686 glibc-devel glibc-devel.i686 libstdc++ libstdc++.i686 flex bison gettext curl-devel compat-expat1 expat-devel openssh-clients emacs git unzip zlib-devel zlib-devel zlib-devel.i686 openssl-devel libtool blas-devel lapack-devel atlas-devel
+
+# Create build directories
+RUN mkdir -p "@UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@" && \
+    cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@ && \
+    mkdir archive && \
+    mkdir gcc && \
+    mkdir cmake && \
+    mkdir boost && \
+    mkdir dagmc && \
+    mkdir doxygen && \
+    mkdir hdf5 && \
+    mkdir moab && \
+    mkdir mpi && \
+    mkdir python && \
+    mkdir root && \
+    mkdir swig
+
+# Download source files
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/archive && \
+    wget https://ftp.gnu.org/gnu/gcc/gcc-5.5.0/gcc-5.5.0.tar.gz && \
+    wget https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz && \
+    wget https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.src.tar.gz/download && \
+    mv download doxygen-1.8.14.src.tar.gz && \
+    wget https://download.open-mpi.org/release/open-mpi/v1.8/openmpi-1.8.8.tar.gz && \
+    wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.1/src/hdf5-1.10.1.tar.gz && \
+    wget https://www.python.org/ftp/python/2.7.14/Python-2.7.14.tgz && \
+    wget https://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download && \
+    mv download boost_1_66_0.tar.gz
+
+# Clone the remaining source file repositories
+RUN cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/swig && \
+    git clone https://github.com/swig/swig.git && \
+    cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/moab && \
+    mkdir moab-5 && \
+    cd moab-5 && \
+    git clone https://bitbucket.org/aprobinson/moab.git && \
+    cd moab && \
+    git checkout Version5.1.0 && \
+    cd @UW_CLUSTER_FRENSIE_GROUP_SOFTWARE_DIR@/dagmc && \
+    git clone https://github.com/FRENSIE/DAGMC.git && \
+    cd DAGMC && \
+    git checkout develop

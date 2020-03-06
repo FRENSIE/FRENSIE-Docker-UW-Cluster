@@ -1,0 +1,3 @@
+#!/bin/bash
+docker run -it @UW_CLUSTER_USER_NAME@/uw-hpc-clone:@BUILD_DEPS_IMAGE_TAG@
+
