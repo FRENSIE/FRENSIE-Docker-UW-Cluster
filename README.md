@@ -28,17 +28,17 @@ frensie related software will be stored on the cluster at /home/group/frensie.
 
 ## Building FRENSIE on UW HPC Clone (first build)
 1. create a working directory where the docker files will be built (e.g. software/uw-clone)
-2. move to uw-clone directory
-3. run `git clone https://github.com/FRENSIE/FRENSIE-Docker-UW-Cluster.git`
-4. run `ln -s FRENSIE-Docker-UW-Cluster src`
-5. run `rn mkdir build`
-6. move to the build directory
-7. run `cp ../src/scripts/frensie-docker.sh ../src`
-8. set the UW_CLUSTER_USER_NAME variable to the user name on the UW cluster
-9. set the UW_CLUSTER_USER_DIR variable to the user directory on the UW cluster
-   (absolute path)
-10. run `./frensie.sh` to configure the Docker files
-11. run `make` (this may take a while as all of FRENSIE's software dependencies
+2. move to `uw-clone` directory
+3. clone the repository: `git clone https://github.com/FRENSIE/FRENSIE-Docker-UW-Cluster.git`
+4. make a symbolic link to the new directory: `ln -s FRENSIE-Docker-UW-Cluster src`
+5. make a build directory: `mkdir build`
+6. move to the `build` directory: `cd build`
+7. make a copy of the `frensie-docker.sh` script in the `build` directory: `cp ../src/scripts/frensie-docker.sh .`
+8. open the copy of the `frensie-docker.sh` script and 
+     * set the UW_CLUSTER_USER_NAME variable to the user name on the UW cluster
+     * set the UW_CLUSTER_USER_DIR variable to the user directory on the UW cluster (absolute path)
+10. configure the system to build: `./frensie-docker.sh ../src` to configure the Docker files
+11. launch the build of FRENSIE in this environment: `make` (this may take a while as all of FRENSIE's software dependencies
     and FRENSIE will be built)
 
 ## Building FRENSIE on UW HPC Clone after FRENSIE Update
